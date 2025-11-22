@@ -221,7 +221,7 @@ One-Shot Example (The "Learning" Part):
 
 // Initiate call - broadcasts to all connected doctors
 app.post('/api/initiate-call', async (req, res) => {
-  const { doctorId, patientId, doctorName, patientName, appointmentType, symptoms } = req.body;
+  const { doctorId, doctorName,patientId, patientName, symptoms } = req.body;
   
   // Log received data for debugging
   console.log('📞 Received call initiation request:');
@@ -229,7 +229,6 @@ app.post('/api/initiate-call', async (req, res) => {
   console.log('   Doctor Name:', doctorName);
   console.log('   Patient ID:', patientId);
   console.log('   Patient Name:', patientName);
-  console.log('   Appointment Type:', appointmentType);
   console.log('   Symptoms:', symptoms);
   
   // Validate required fields
@@ -297,10 +296,9 @@ app.post('/api/initiate-call', async (req, res) => {
     type: 'incoming_call',
     callId: callId,
     patientId: patientId,
-    patientName: patientName || `Patient ${patientId}`,
+    patientName: patientName || "PATIENT",
     doctorId: doctorId,
     doctorName: doctorName || null,
-    appointmentType: appointmentType || null,
     symptoms: symptoms || null,
     appointmentId: appointmentId, // Store appointment ID for status updates
     timestamp: new Date().toISOString()
