@@ -4,8 +4,44 @@ import './App.css';
 
 export default function DoctorCallInterface() {
   // Get API URLs from environment variables
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-  const WS_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:3001';
+  // Auto-detect WebSocket protocol based on API URL protocol
+  const getAPIUrl = () => {
+    const envUrl = process.env.REACT_APP_API_URL;
+    if (envUrl) return envUrl;
+    // Default to localhost for development
+    return window.location.protocol === 'https:' 
+      ? 'http://localhost:3001' 
+      : 'http://localhost:3001';
+  };
+  
+  const getWebSocketUrl = () => {
+    // First check if explicit WS URL is set
+    if (process.env.REACT_APP_WS_URL) {
+      return process.env.REACT_APP_WS_URL;
+    }
+    
+    // Otherwise, derive from API URL
+    const apiUrl = getAPIUrl();
+    if (apiUrl.startsWith('https://')) {
+      return apiUrl.replace('https://', 'wss://');
+    } else if (apiUrl.startsWith('http://')) {
+      return apiUrl.replace('http://', 'ws://');
+    }
+    
+    // Fallback: use current page protocol
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const hostname = apiUrl.replace(/^https?:\/\//, '').split('/')[0];
+    return `${protocol}//${hostname}`;
+  };
+  
+  const API_URL = getAPIUrl();
+  const WS_URL = getWebSocketUrl();
+  
+  // Log URLs for debugging (but not in production)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔗 API URL:', API_URL);
+    console.log('🔗 WebSocket URL:', WS_URL);
+  }
   
   const [ws, setWs] = useState(null);
   const [doctorId] = useState('dr_sarah_123'); // In production, get from auth

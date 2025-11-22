@@ -18,8 +18,32 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://cpifquoelejdrtlqycsj.s
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwaWZxdW9lbGVqZHJ0bHF5Y3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIxODM4NTEsImV4cCI6MjA3Nzc1OTg1MX0.9xJjAStrw9z28lg0GOrFneJs7ckJiYnmzdwS_gz581M';
 
 // CORS configuration - allow requests from frontend URL
+// Support multiple origins for flexibility
+const allowedOrigins = [
+  FRONTEND_URL,
+  'https://callthedoctor.vercel.app',
+  'http://localhost:3000'
+].filter(Boolean); // Remove any undefined/null values
+
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, or same-origin requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.some(allowed => origin === allowed)) {
+      callback(null, true);
+    } else {
+      // For development, allow all origins; for production, log and reject
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`⚠️  Allowing origin in dev mode: ${origin}`);
+        callback(null, true);
+      } else {
+        console.warn(`❌ CORS blocked origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
